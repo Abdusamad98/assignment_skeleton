@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:assignment_skeleton/ui/result_screen.dart';
 import 'package:assignment_skeleton/widgets/variants.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +18,16 @@ class QuestionsScreen extends StatefulWidget {
 
 class _QuestionsScreenState extends State<QuestionsScreen> {
   int currentQuestionIndex = 0;
+  int correctQuestionsCount = 0;
+
+  late Timer periodicTimer;
+  int seconds = 0;
+
+  @override
+  void initState() {
+    _setTimer();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +42,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
           children: [
             const SizedBox(height: 20),
             Text(
-              "Time: 10 s",
+              "Time: $seconds s",
               style: TextStyle(fontSize: 25, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 100),
@@ -41,29 +54,88 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             VariantsView(
               question: widget.levelQuestions[currentQuestionIndex],
               onAnswerATap: () {
-                setState(() {
-                  currentQuestionIndex++;
-                });
+                QuestionModel question =
+                    widget.levelQuestions[currentQuestionIndex];
+                _onVariantTap(question.answerA);
               },
               onAnswerBTap: () {
-                setState(() {
-                  currentQuestionIndex++;
-                });
+                QuestionModel question =
+                    widget.levelQuestions[currentQuestionIndex];
+
+                _onVariantTap(question.answerB);
               },
               onAnswerCTap: () {
-                setState(() {
-                  currentQuestionIndex++;
-                });
+                QuestionModel question =
+                    widget.levelQuestions[currentQuestionIndex];
+
+                _onVariantTap(question.answerC);
               },
               onAnswerDTap: () {
-                setState(() {
-                  currentQuestionIndex++;
-                });
+                QuestionModel question =
+                    widget.levelQuestions[currentQuestionIndex];
+
+                _onVariantTap(question.answerD);
               },
             )
           ],
         ),
       ),
+    );
+  }
+
+  _onVariantTap(String answer) {
+    QuestionModel question = widget.levelQuestions[currentQuestionIndex];
+    if (question.trueAnswer == answer) {
+      correctQuestionsCount++;
+    }
+    if (widget.levelQuestions.length - 1 > currentQuestionIndex) {
+      setState(() {
+        periodicTimer.cancel();
+        _setTimer();
+        currentQuestionIndex++;
+      });
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return ResultScreen(correctAnswersCount: correctQuestionsCount);
+          },
+        ),
+      );
+    }
+  }
+
+  _setTimer() {
+    periodicTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (timer) {
+        print("TIME:${timer.tick} ");
+        setState(() {
+          seconds = timer.tick;
+          if (timer.tick == 20) {
+            if (widget.levelQuestions.length - 1 > currentQuestionIndex) {
+              setState(() {
+                currentQuestionIndex++;
+              });
+            } else {
+              timer.cancel();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return ResultScreen(
+                        correctAnswersCount: correctQuestionsCount);
+                  },
+                ),
+              );
+            }
+            seconds = 0;
+            timer.cancel();
+            _setTimer();
+          }
+        });
+      },
     );
   }
 }
