@@ -1,4 +1,5 @@
 class QuestionModel {
+  final String level;
   final String questionText;
   final String answerA;
   final String answerB;
@@ -7,6 +8,7 @@ class QuestionModel {
   final String trueAnswer;
 
   QuestionModel({
+    required this.level,
     required this.trueAnswer,
     required this.answerA,
     required this.answerB,
